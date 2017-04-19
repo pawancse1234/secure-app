@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:cache="http://www.springframework.org/schema/cache"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+	<bean
+		class="org.springframework.session.data.redis.config.annotation.web.http.RedisHttpSessionConfiguration" />
+	<bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate"
+		p:connection-factory-ref="jedisConnFactory" />
+	<bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+		<property name="maxTotal" value="${redis.max.pool}" />
+		<property name="maxIdle" value="${redis.min.pool}" />
+		<property name="minIdle" value="${redis.minIdle}" />
+		<property name="testOnBorrow" value="true" />
+		<property name="testOnReturn" value="true" />
+		<property name="testWhileIdle" value="true" />
+		<property name="minEvictableIdleTimeMillis" value="${redis.minEvictableIdleTimeMillis}" />
+		<property name="timeBetweenEvictionRunsMillis" value="${redis.timeBetweenEvictionRunsMillis}" />
+		<property name="numTestsPerEvictionRun" value="${redis.numTestsPerEvictionRun}" />
+		<property name="blockWhenExhausted" value="true" />
+	</bean>
+	<!-- Ldap Security Services based on RBAC -->
+	<bean id="redisSessionRepo"
+		class="org.springframework.session.data.redis.RedisOperationsSessionRepository"
+		primary="true">
+		<constructor-arg index="0" ref="jedisConnFactory" />
+		<property name="defaultMaxInactiveInterval" value="${redis.cookie.session.timeout}" />
+		<property name="redisFlushMode">
+			<value type="org.springframework.session.data.redis.RedisFlushMode">IMMEDIATE</value>
+		</property>
+	</bean>
+	<bean id="sessionRegistry"
+		class="biz.neustar.omx.atmos.admin.security.OMXSessionRepository">
+		<constructor-arg ref="redisSessionRepo" />
+	</bean>
+	<bean id="cookieSerializer"
+		class="org.springframework.session.web.http.DefaultCookieSerializer">
+		<property name="cookieName" value="JSESSIONID" />
+		<property name="cookiePath" value="/" />
+		<property name="domainNamePattern" value="^.+?\\.(\\w+\\.[a-z]+)$" />
+	</bean>
+
+</beans>

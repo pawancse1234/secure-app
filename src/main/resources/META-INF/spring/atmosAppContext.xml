@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:camelContext="http://camel.apache.org/schema/spring" xmlns:cxf="http://camel.apache.org/schema/cxf"
+
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd
+		http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
+		http://www.springframework.org/schema/context 	http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+	<import resource="classpath:META-INF/cxf/cxf.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+	<import resource="classpath:META-INF/spring/atmosSecurityContext.xml" />
+	<import resource="classpath:META-INF/spring/atmosSSLClientContext.xml" />
+	<context:annotation-config />
+	<context:component-scan base-package="biz.neustar.omx" />
+	<bean class="biz.neustar.omx.atmos.TrimmedPropertyConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:atmos.properties</value>
+			</list>
+		</property>
+	</bean>
+	<bean class="biz.neustar.omx.atmos.CacheManagerConfiguration"></bean>
+	<bean id="jsonProvider" class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider" />
+	<!-- Defined the server endpoint to create the cxf-rs consumer -->
+	<cxf:rsServer id="atmosRSTAdmSvr" address="/admin">
+		<cxf:serviceBeans>
+			<ref bean="routeAdmin" />
+			<ref bean="userManagement" />
+		</cxf:serviceBeans>
+		<cxf:providers>
+			<ref bean="jsonProvider" />
+		</cxf:providers>
+	</cxf:rsServer>
+	<bean id="userManagement" class="biz.neustar.omx.atmos.admin.UserManagement" />
+	<bean id="routeAdmin" class="biz.neustar.omx.atmos.admin.AtmosAdminControllerImpl" />
+	<camelContext trace="false" id="cmlCtx" useBreadcrumb="true"
+		xmlns="http://camel.apache.org/schema/spring" useMDCLogging="true"
+		allowUseOriginalMessage="true">
+		<propertyPlaceholder id="properties"
+			location="classpath:config/atmos.properties" />
+		<contextScan />
+		<jmxAgent id="agent" usePlatformMBeanServer="true"
+			loadStatisticsEnabled="true" mbeanServerDefaultDomain="omx.neustar.biz" />
+		<threadPool poolSize="50" maxPoolSize="100" keepAliveTime="600"
+			timeUnit="SECONDS" maxQueueSize="1000" rejectedPolicy="CallerRuns"
+			threadName="customWireTapIntakeThreadPool" id="wireTapIntakeThreadPool" />
+		<threadPool poolSize="50" maxPoolSize="100" keepAliveTime="600"
+			timeUnit="SECONDS" maxQueueSize="10000" rejectedPolicy="CallerRuns"
+			threadName="multiRecipientThreadPool" id="multiRecipientThreadPool" />
+		<route id="cxfRSTServer" xmlns="http://camel.apache.org/schema/spring">
+			<from
+				uri="cxfrs:bean:atmosRSTAdmSvr?bindingStyle=SimpleConsumer&amp;performInvocation=true" />
+			<log message="processed body is ${body}" />
+		</route>
+	</camelContext>
+</beans>

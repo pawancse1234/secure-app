@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<bean id="actMQCnsmrBrkr" class="org.apache.activemq.camel.component.ActiveMQComponent">
+		<property name="configuration" ref="jmsCnsmrCfg" />
+	</bean>
+	
+	<bean id="actMQPrdcrBrkr" class="org.apache.activemq.camel.component.ActiveMQComponent">
+		<property name="configuration" ref="jmsPrdcrCfg" />
+	</bean>
+	
+	<bean id="actMQTopicCnsmrBroker" class="org.apache.activemq.camel.component.ActiveMQComponent">
+		<property name="configuration" ref="jmsCnsmrTopicConfig" />
+	</bean>
+	
+	<bean id="actMQTopicPrdcrBroker" class="org.apache.activemq.camel.component.ActiveMQComponent">
+		<property name="configuration" ref="jmsPrdcrTopicConfig" />
+	</bean>
+
+	<bean id="jmsCnsmrCfg" class="org.apache.camel.component.jms.JmsConfiguration">
+		<property name="connectionFactory" ref="jmsConsumerFactory" />
+		<property name="concurrentConsumers" value="${openwire.consumer.concurrentConsumers}" />
+		<property name="transacted" value="false" />
+		<property name="deliveryPersistent" value="true" />
+	 	<property name="cacheLevelName" value="CACHE_CONSUMER"/> 
+		<property name="requestTimeout" value="${openwire.consumer.requestTimeout}" />
+		<property name="acknowledgementModeName" value="CLIENT_ACKNOWLEDGE" />
+		<property name="messageTimestampEnabled" value="true" />
+		<property name="allowNullBody" value="false" />
+	</bean>
+	
+	<bean id="jmsPrdcrCfg" class="org.apache.camel.component.jms.JmsConfiguration">
+		<property name="connectionFactory" ref="jmsProducerFactory" />
+		<property name="concurrentConsumers" value="${openwire.consumer.concurrentConsumers}" />
+		<property name="transacted" value="false" />
+		<property name="deliveryPersistent" value="true" />
+	 	<property name="cacheLevelName" value="CACHE_CONSUMER"/> 
+		<property name="requestTimeout" value="${openwire.consumer.requestTimeout}" />
+		<property name="acknowledgementModeName" value="CLIENT_ACKNOWLEDGE" />
+		<property name="messageTimestampEnabled" value="true" />
+		<property name="allowNullBody" value="false" />
+	</bean>
+	
+	<bean id="jmsCnsmrTopicConfig" class="org.apache.camel.component.jms.JmsConfiguration">
+		<property name="connectionFactory" ref="jmsTopicProducerFactory" />
+		<property name="transacted" value="false" />
+		<property name="deliveryPersistent" value="true" />
+		<property name="cacheLevelName" value="CACHE_SESSION"/>
+		<property name="requestTimeout" value="${openwire.consumer.requestTimeout}" />
+		<property name="acknowledgementModeName" value="CLIENT_ACKNOWLEDGE" />
+		<property name="messageTimestampEnabled" value="true" />
+		<property name="allowNullBody" value="false" />
+	</bean>
+	<bean id="jmsPrdcrTopicConfig" class="org.apache.camel.component.jms.JmsConfiguration">
+		<property name="connectionFactory" ref="jmsTopicConsumerFactory" />
+		<property name="transacted" value="false" />
+		<property name="deliveryPersistent" value="true" />
+		<property name="cacheLevelName" value="CACHE_SESSION"/>
+		<property name="requestTimeout" value="${openwire.consumer.requestTimeout}" />
+		<property name="acknowledgementModeName" value="CLIENT_ACKNOWLEDGE" />
+		<property name="messageTimestampEnabled" value="true" />
+		<property name="allowNullBody" value="false" />
+	</bean>
+
+	<bean id="jmsConsumerFactory" class="org.apache.activemq.pool.PooledConnectionFactory"
+		destroy-method="stop">
+		<property name="maxConnections" value="${openwire.consumer.maxConnections}" />
+		<property name="maximumActiveSessionPerConnection"
+			value="${openwire.consumer.maxActive.session.perConn}" />
+		<property name="connectionFactory">
+			<bean class="org.apache.activemq.ActiveMQConnectionFactory">
+				<property name="brokerURL" value="${openwire.consumer.url}" />
+				<property name="watchTopicAdvisories" value="false" />
+				<property name="userName" value="${openwire.consumer.userName}" />
+				<property name="password" value="${openwire.consumer.password}" />
+			</bean>
+		</property>
+	</bean>
+
+	<bean id="jmsProducerFactory" class="org.apache.activemq.pool.PooledConnectionFactory"
+		destroy-method="stop">
+		<property name="maxConnections" value="${openwire.producer.maxConnections}" />
+		<property name="maximumActiveSessionPerConnection"
+			value="${openwire.producer.maxActive.session.perConn}" />
+		<property name="connectionFactory">
+			<bean class="org.apache.activemq.ActiveMQConnectionFactory" destroy-method="">
+				<property name="brokerURL" value="${openwire.producer.url}" />
+				<property name="watchTopicAdvisories" value="false" />
+				<property name="userName" value="${openwire.producer.userName}" />
+				<property name="password" value="${openwire.producer.password}" />
+			</bean>
+		</property>
+	</bean>
+	
+	<!-- <bean id="jmsTopicConsumerFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+		<property name="brokerURL" value="${openwire.consumer.url}" />
+		<property name="watchTopicAdvisories" value="false" />
+		<property name="userName" value="${openwire.consumer.userName}" />
+		<property name="password" value="${openwire.consumer.password}" />
+	</bean>
+	 -->
+	<bean id="jmsTopicConsumerFactory" class="org.apache.activemq.pool.PooledConnectionFactory"
+		destroy-method="stop">
+		<property name="maxConnections" value="${openwire.consumer.maxConnections}" />
+		<property name="maximumActiveSessionPerConnection"
+			value="${openwire.consumer.maxActive.session.perConn}" />
+		<property name="connectionFactory">
+			<bean class="org.apache.activemq.ActiveMQConnectionFactory">
+				<property name="brokerURL" value="${openwire.consumer.url}" />
+				<property name="watchTopicAdvisories" value="false" />
+				<property name="userName" value="${openwire.consumer.userName}" />
+				<property name="password" value="${openwire.consumer.password}" />
+			</bean>
+		</property>
+	</bean>
+
+	<bean id="jmsTopicProducerFactory" class="org.apache.activemq.pool.PooledConnectionFactory"
+		destroy-method="stop">
+		<property name="maxConnections" value="${openwire.producer.maxConnections}" />
+		<property name="maximumActiveSessionPerConnection"
+			value="${openwire.producer.maxActive.session.perConn}" />
+		<property name="connectionFactory">
+			<bean class="org.apache.activemq.ActiveMQConnectionFactory">
+				<property name="brokerURL" value="${openwire.producer.url}" />
+				<property name="watchTopicAdvisories" value="false" />
+				<property name="userName" value="${openwire.producer.userName}" />
+				<property name="password" value="${openwire.producer.password}" />				
+			</bean>
+		</property>
+	</bean>
+
+</beans>

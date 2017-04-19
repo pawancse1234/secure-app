@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:cxf="http://camel.apache.org/schema/cxf"
+       xmlns:cxfcore="http://cxf.apache.org/core"
+       xmlns:sec="http://cxf.apache.org/configuration/security"
+       xmlns:http="http://cxf.apache.org/transports/http/configuration"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd
+       http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
+       http://cxf.apache.org/configuration/security http://cxf.apache.org/schemas/configuration/security.xsd
+       http://cxf.apache.org/transports/http/configuration http://cxf.apache.org/schemas/configuration/http-conf.xsd">
+   	
+	<!-- <http:conduit name="https://stomvdvvatmos02:8443/omx-atmos-emulators/services/AccountService" >
+		<http:tlsClientParameters disableCNCheck="${tp.disableCNCheck.flag}" secureSocketProtocol="TLSv1">
+			<sec:keyManagers keyPassword="${tp.e911intrado.tls.keystore.keyPassword}">
+				<sec:keyStore password="${tp.e911intrado.tls.keystore.password}" type="JKS"
+					file="${tp.e911intrado.tls.keystore.path}" />
+			</sec:keyManagers>
+			<sec:trustManagers>
+				<sec:keyStore password="${tp.e911intrado.tls.truststore.password}" type="JKS"
+					file="${tp.e911intrado.tls.truststore.path}" />
+			</sec:trustManagers>
+			<sec:cipherSuitesFilter>
+				<sec:include>.*_WITH_AES_.*</sec:include>
+			</sec:cipherSuitesFilter>
+		</http:tlsClientParameters>
+		<http:client AutoRedirect="true" Connection="Keep-Alive" />
+	</http:conduit>
+	<http:conduit
+		name="https://stomvdvvatmos02:8443/omx-atmos-emulators/services/AsrOrderPortTypeService">
+		<http:tlsClientParameters disableCNCheck="${tp.disableCNCheck.flag}" secureSocketProtocol="TLSv1">
+			<sec:keyManagers keyPassword="${tp.attasruom.tls.keystore.keyPassword}">
+				<sec:keyStore password="${tp.attasruom.tls.keystore.password}" type="JKS"
+					file="${tp.attasruom.tls.keystore.path}" />
+			</sec:keyManagers>
+			<sec:trustManagers>
+				<sec:keyStore password="${tp.attasruom.tls.truststore.password}" type="JKS"
+					file="${tp.attasruom.tls.truststore.path}" />
+			</sec:trustManagers>
+			<sec:cipherSuitesFilter>
+				<sec:include>.*_WITH_AES_.*</sec:include>
+			</sec:cipherSuitesFilter>
+		</http:tlsClientParameters>
+		<http:client AutoRedirect="true" Connection="Keep-Alive" />
+	</http:conduit> -->
+</beans>

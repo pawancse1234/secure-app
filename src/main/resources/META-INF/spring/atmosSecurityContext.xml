@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:security="http://www.springframework.org/schema/security"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-4.2.xsd">
+	<import resource="omxRedisContext.xml" />
+	<bean id="securityPrefixReset" class="biz.neustar.omx.atmos.admin.security.RolesPrefixPostProcessor" />
+	<security:http auto-config="true" use-expressions="true">
+		<security:custom-filter ref="atmosAuthFilter"
+			before="FORM_LOGIN_FILTER" />
+		<security:logout invalidate-session="true"
+			delete-cookies="JSESSIONID" logout-url="/user/logout"
+			success-handler-ref="sucessHandler" />
+		<security:session-management
+			session-authentication-strategy-ref="sas" />
+		<security:csrf disabled="true" />
+	</security:http>
+	<bean id="sucessHandler" class="biz.neustar.omx.atmos.admin.security.AtmosLogoutSuccessHandler"></bean>
+	<!-- Filter to redirect to login page -->
+	<bean id="exceptionTranslationFilter"
+		class="org.springframework.security.web.access.ExceptionTranslationFilter">
+		<constructor-arg ref="authenticationEntryPoint" />
+		<property name="accessDeniedHandler" ref="accessDeniedHandler" />
+	</bean>
+	<bean id="authenticationEntryPoint"
+		class="biz.neustar.omx.atmos.admin.security.UnauthorizedErrorAuthenticationEntryPoint">
+	</bean>
+
+	<bean id="accessDeniedHandler" class="biz.neustar.omx.atmos.admin.security.AcessDeniedAtmosHandler">
+	</bean>
+
+	<bean id="atmosAuthFilter"
+		class="org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter">
+		<property name="sessionAuthenticationStrategy" ref="sas" />
+		<property name="authenticationManager" ref="authenticationManager" />
+		<property name="authenticationFailureHandler" ref="failureHandler" />
+	</bean>
+	<bean id="failureHandler"
+		class="biz.neustar.omx.atmos.admin.security.AtmosAuthenticationFailureHandler" />
+	<security:authentication-manager id="authenticationManager">
+		<security:authentication-provider
+			ref="ldapAuthProvider" />
+
+	</security:authentication-manager>
+	<bean id="omxRedirectStrategy"
+		class="org.springframework.security.web.DefaultRedirectStrategy">
+		<property name="contextRelative" value="true" />
+	</bean>
+	<bean id="omxUserSearch"
+		class="org.springframework.security.ldap.search.FilterBasedLdapUserSearch">
+		<constructor-arg index="0" value="" />
+		<constructor-arg index="1" value="(userPrincipalName={0})" />
+		<constructor-arg index="2" ref="ldapCtxSource" />
+	</bean>
+
+	<bean id="ldapCtxSource"
+		class="org.springframework.security.ldap.DefaultSpringSecurityContextSource">
+		<constructor-arg value="ldaps://${ldap.server}/${ldap.server.searchBase}" />
+		<property name="userDn" value="${ldap.server.bindAccount}" />
+		<property name="password" value="${ldap.server.bindAccount.password}" />
+	</bean>
+
+	<bean id="ldapAuthProvider"
+		class="org.springframework.security.ldap.authentication.LdapAuthenticationProvider">
+		<constructor-arg>
+			<bean
+				class="org.springframework.security.ldap.authentication.BindAuthenticator">
+				<constructor-arg ref="ldapCtxSource" />
+				<!-- <property name="userSearch" ref="omxUserSearch" /> -->
+				<property name="userDnPatterns">
+					<list>
+						<value>uid={0},${ldap.server.userAccount.domain}</value>
+					</list>
+				</property>
+			</bean>
+		</constructor-arg>
+		<constructor-arg>
+			<bean class="biz.neustar.omx.atmos.admin.security.AtmosLDAPAuthorityProvider">
+				<constructor-arg ref="ldapCtxSource" />
+				<constructor-arg value="${ldap.server.userAccount.groups.domain}" />
+				<property name="groupRoleAttribute" value="neuRole" />
+				<property name="groupSearchFilter" value="" />
+				<property name="convertToUpperCase" value="false" />
+			</bean>
+		</constructor-arg>
+		<property name="hideUserNotFoundExceptions" value="false"></property>
+	</bean>
+
+	<bean id="sas"
+		class="org.springframework.security.web.authentication.session.ConcurrentSessionControlAuthenticationStrategy">
+		<constructor-arg name="sessionRegistry" ref="sessionRegistry" />
+		<property name="maximumSessions" value="1" />
+		<property name="exceptionIfMaximumExceeded" value="true" />
+	</bean>
+	<security:global-method-security
+		access-decision-manager-ref="httpRequestAccessDecisionManager"
+		jsr250-annotations="enabled" />
+
+	<bean id="httpRequestAccessDecisionManager"
+		class="org.springframework.security.access.vote.AffirmativeBased">
+		<constructor-arg>
+			<list>
+				<bean class="org.springframework.security.access.vote.RoleVoter">
+					<property name="rolePrefix" value=""/>
+				</bean>
+				<bean class="org.springframework.security.access.vote.AuthenticatedVoter" />
+			</list>
+		</constructor-arg>
+		<property name="allowIfAllAbstainDecisions" value="false" />
+	</bean>
+
+</beans>
